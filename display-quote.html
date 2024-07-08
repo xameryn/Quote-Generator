@@ -67,7 +67,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data) editPage(data);
-            });
+            })
+            .catch(error => console.error(error));
 
         function editPage(data) {
             addElement('header', 'h1', personal.company)

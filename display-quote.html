@@ -92,7 +92,6 @@
 
             let table = document.getElementById("costs")
             let total = 0
-            let tax = 0
 
             for (let i=0; i<data['cost-description'].length; i++) {
                 table.innerHTML += `<tr><th class='description'>${data['cost-description'][i]}</th><th class='cost'>$${(Math.round((Number(data['cost-amount'][i]) + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
@@ -101,10 +100,19 @@
 
             table.innerHTML += `<tr><th class='description'></th><th class='cost'></th></tr>`
 
-            tax = total * 0.05
-            total += tax
+            let tax = 0
+            let tax_total = 0
+            let tax_name = ''
 
-            table.innerHTML += `<tr><th class='description'>${'GST'}</th><th class='cost'>$${(Math.round((tax + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
+            for (let i = 0; i < personal.tax_names.length; i++) {
+                tax = total * personal.tax_rates[i]
+                tax_total += tax
+                tax_name = personal.tax_names[i]
+
+                table.innerHTML += `<tr><th class='description'>${tax_name}</th><th class='cost'>$${(Math.round((tax + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
+            }
+
+            total += tax_total
 
             table.innerHTML += `<tr><th class='description-total'>${'Total'}</th><th class='cost-total'>$${(Math.round((total + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
             

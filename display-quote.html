@@ -106,7 +106,7 @@
             let tax_name = ''
 
             for (let i = 0; i < personal.tax_names.length; i++) {
-                tax = total * personal.tax_rates[i]
+                tax = total * (personal.tax_rates[i] * 0.01)
                 tax_total += tax
                 tax_name = personal.tax_names[i]
 

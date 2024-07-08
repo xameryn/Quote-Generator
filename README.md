@@ -8,6 +8,7 @@ Self-hosted quotation generator for business use.
 - Quotes saved as JSON server-side
 - List of previously generated quotes that can be access, viewed, and edited client-side
 - Generate reference based on street name, client first name, and month / year (ie. `john-sugarpine-8-24` for John Smith, 1234 Sugarpine Drive)
+- Dynamically add percentage-based fees such as taxes inside personal.js in an array format
 
 ### Setup
 - Duplicate `public/CHECK_README.js` and rename it to `public/personal.js`

@@ -27,7 +27,7 @@ body {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    max-width: 500px; /* Adjust based on your preference */
+    max-width: 500px;
 }
 
 .close {
@@ -45,28 +45,8 @@ body {
 }
 
 .scrollable-list {
-    height: 300px; /* Adjust based on your preference */
+    height: 300px;
     overflow-y: auto;
-}
-
-@keyframes rotateImage {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-#rotatingImage {
-    position: fixed;
-    margin-left: 20%;
-    z-index: 1000; /* Ensure it's above other content */
-}
-
-#rotatingImage.show {
-    display: block;
-    animation: rotateImage 2s linear forwards;
 }
 
 #quotesModal .scrollable-list a {
@@ -121,11 +101,11 @@ button, input[type="submit"] {
     cursor: pointer;
 }
 
-button[onclick="removeComment()"], button[onclick="removeCost()"] {
+.negative-button {
     background-color: #FF0000;
 }
 
-button[onclick="removeComment()"]:hover, button[onclick="removeCost()"]:hover {
+.negative-button:hover {
     background-color: #B22222;
 }
 
@@ -136,4 +116,51 @@ input[type="submit"] {
 
 button:hover, input[type="submit"]:hover {
     background-color: #0056b3;
+}
+
+div#form-buttons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+div#form-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+/* Seal Easter Egg */
+#seal-container {
+    display: flex;
+    padding: 0%;
+    margin: 0%;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+@keyframes seal {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#seal {
+    position: fixed;
+}
+
+#seal.show {
+    display: block;
+    animation: seal 2s linear forwards;
 }

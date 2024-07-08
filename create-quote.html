@@ -6,7 +6,10 @@
     <link rel="stylesheet" href="assets/css/style-form.css">
 </head>
 <body>
-    <img src="assets/img/seal.png" id="rotatingImage" style="display: none; position: absolute;" alt="Rotating PNG">
+    <!-- <img src="assets/img/seal.png" id="seal" style="display: none;" alt="Rotating PNG"> -->
+    <div id="seal-container">
+        <img src="assets/img/seal.png" id="seal" style="display: none;" alt="Rotating PNG">
+    </div>
     <form id="dynamic-form" action="/submit-quote" method="post">
         <button type="button" id="openModal">Previous Quotes</button>
         <h1>Quote Generator v4</h1>
@@ -43,7 +46,7 @@
         </div>
         
         <button type="button" onclick="addComment()">Add Comment</button>
-        <button type="button" onclick="removeComment()">Remove Comment</button><br>
+        <button type="button" class="negative-button" onclick="removeComment()">Remove Comment</button><br>
         
         <h2>Quote Costs</h2>
         <div id="cost-fields">
@@ -55,9 +58,14 @@
         </div>
         
         <button type="button" onclick="addCost()">Add Cost</button>
-        <button type="button" onclick="removeCost()">Remove Cost</button><br>
-        
-        <input type="submit" value="Submit">
+        <button type="button" class="negative-button" onclick="removeCost()">Remove Cost</button><br>
+
+        <div id="form-buttons-container">
+            <div id="form-buttons">
+                <input type="submit" value="Submit">
+                <button type="button" id="clear-button" class="negative-button">Clear</button>
+            </div>
+        </div>
     </form>
 
     <div id="quotesModal" class="modal">
@@ -72,6 +80,12 @@
         var modal = document.getElementById("quotesModal");
         var btn = document.getElementById("openModal");
         var span = document.getElementsByClassName("close")[0];
+
+        document.getElementById('clear-button').addEventListener('click', function(event) {
+            if (confirm('Are you sure you want to clear the quote?')) {
+                clearQuote()
+            }
+        });
 
         btn.onclick = function() {
             openQuotesModal();
@@ -113,7 +127,7 @@
 
                 document.getElementById('triggerAnimation').addEventListener('click', function(e) {
                     e.preventDefault();
-                    var img = document.getElementById('rotatingImage');
+                    var img = document.getElementById('seal');
                     img.style.display = 'block';
                     img.classList.add('show');
 
@@ -131,7 +145,8 @@
             .then(data => {
                 if (data) editPage(data);
                 console.log('loaded')
-            });
+            })
+            .catch();
 
         function addComment() {
             var container = document.getElementById('comment-fields');
@@ -168,6 +183,20 @@
                 container.children[0].children[2].value = '';
                 container.children[0].children[5].value = '';
             }
+        }
+
+        function clearQuote() {
+            document.querySelector('form').reset();
+
+            while (document.getElementById('comment-fields').children.length > 1) {
+                removeComment();
+            }
+            removeComment();
+
+            while (document.getElementById('cost-fields').children.length > 1) {
+                removeCost();
+            }
+            removeCost();
         }
 
         function generateCustomer() {

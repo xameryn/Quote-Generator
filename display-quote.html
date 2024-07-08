@@ -17,7 +17,7 @@
                             <th style="text-align: right; font-weight: 900;">Date</th>
                         </tr>
                         <tr id="customer-table-2">
-                            <th style="text-align: right; font-weight: 900;">Quotation Reference </th>
+                            <th id="reference_field" style="text-align: right; font-weight: 900;">Quotation Reference </th>
                         </tr>
                         <tr id="customer-table-3">
                             <th style="text-align: right; font-weight: 900;">Customer </th>
@@ -45,7 +45,7 @@
             <br><br><br>  
             <div id="footer" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                 <div id="contact-outro"></div>
-                <h3>Thank you for you business!</h3>
+                <h3 id="foot_note">Foot Note</h3>
                 <h2 class="hide-on-print" style="color: red;">Press CTRL+P and 'Save as PDF' to Save Quote</h2>
                 <input type="submit" value="Return to Generator" class="hide-on-print" onclick="window.location.href='/create'">
             </div>
@@ -71,7 +71,7 @@
 
         function editPage(data) {
             addElement('header', 'h1', personal.company)
-            addElement('header', 'h1', 'Quotation', 'color: #a6a6a6;')
+            addElement('header', 'h1', `${personal.document_type}`, 'color: #a6a6a6;')
 
             addElement('provider-info', 'p', personal.address[0])
             addElement('provider-info', 'p', personal.address[1])
@@ -116,7 +116,10 @@
 
             table.innerHTML += `<tr><th class='description-total'>${'Total'}</th><th class='cost-total'>$${(Math.round((total + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
             
-            addElement('contact-outro', 'p', `If you have any questions concerning this quotation, contact me at ${personal.phone} or ${personal.email}`, 'text-align: center')
+            addElement('contact-outro', 'p', `${personal.end_note}`, 'text-align: center')
+
+            document.getElementById('foot_note').textContent = personal.foot_note;
+            document.getElementById('reference_field').textContent = `${personal.document_type} Reference `;
         }
 
         function addElement(id, type, content, style) {

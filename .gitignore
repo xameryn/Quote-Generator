@@ -1,0 +1,5 @@
+keys.js
+node_modules/
+.vscode/
+# quotes/
+public/personal.js

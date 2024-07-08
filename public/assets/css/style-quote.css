@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    font-family: 'Raleway';
+    font-size: 20px;
+    width: 210mm;
+    height: 297mm;
+    margin: auto;
+    padding: 20px 40px;
+}
+
+p {
+    margin: 0;
+}
+
+h3 {
+    margin: 0;
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+#comments {
+    width: 100%; /* Adjust based on your layout needs */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+#description {
+    width: 100%; /* Adjust based on your layout needs */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: auto;
+    /* border: 1px solid; */
+}
+
+table.customer {
+    border: 0px solid;
+}
+
+th.header {
+    text-align: center;
+    font-weight: 900;
+    border-bottom: 1px solid;
+    background-color: rgb(235, 235, 235);
+}
+
+th {
+    text-align: left;
+    padding-right: 8px;
+    font-weight: 100;
+}
+
+th.description {
+    padding: 10px;
+    border-left: 1px solid;
+    border-right: 1px solid;
+    font-size: 16px;
+}
+
+th.cost {
+    padding: 10px;
+    border-right: 1px solid
+}
+
+th.description-total {
+    padding: 10px;
+    padding-right: 20px;
+    font-weight: 900;
+    border-top: 1px solid;
+    text-align: right;
+}
+
+th.cost-total {
+    padding: 10px;
+    border: 1px solid;
+    background-color: rgb(235, 235, 235);
+}
+
+input[type="submit"] {
+    background-color: #FF0000;
+    justify-content: center;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #B22222;
+}
+
+
+@media print { 
+    h2.hide-on-print, input.hide-on-print { 
+        display: none;
+    }
+    html, body {
+        height: 98%;    
+    }
+} 

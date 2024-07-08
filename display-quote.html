@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Quote Display</title>
+        <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
+        <link rel="stylesheet" href="assets/css/style-quote.css">
+    </head>
+    <body>
+        <div id="pdf">
+            <div id="header" style="display: flex; justify-content: space-between;"></div>
+
+            <div id="contact" style="display: flex; justify-content: space-between;">
+                <div id="provider-info"></div>
+                <div id="quote-info">
+                    <table class="customer">
+                        <tr id="customer-table-1">
+                            <th style="text-align: right; font-weight: 900;">Date</th>
+                        </tr>
+                        <tr id="customer-table-2">
+                            <th style="text-align: right; font-weight: 900;">Quotation Reference </th>
+                        </tr>
+                        <tr id="customer-table-3">
+                            <th style="text-align: right; font-weight: 900;">Customer </th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <br>
+            <div id="client">
+                <h3>To:</h3></div>
+            </div>
+            <br><br>
+            <div id="comments">
+                <h3>Comments or special instructions:</h3>
+            </div>
+            <br>
+            <div id="table">
+                <table class="costs" id="costs">
+                    <tr>
+                        <th class="header" style='border: 1px solid'>Description</th>
+                        <th class="header" style='border: 1px solid'>Amount</th>
+                    </tr>
+                </table>
+            </div>
+            <br><br><br>  
+            <div id="footer" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div id="contact-outro"></div>
+                <h3>Thank you for you business!</h3>
+                <h2 class="hide-on-print" style="color: red;">Press CTRL+P and 'Save as PDF' to Save Quote</h2>
+                <input type="submit" value="Return to Generator" class="hide-on-print" onclick="window.location.href='/create'">
+            </div>
+        </div>
+    </body>
+    <script type="module">
+        import { personal } from './personal.js';
+        window.personal = personal;
+    </script>
+    <script>
+        personal = window.personal;
+
+        var html = ''
+        var date = new Date();
+        date = date.toLocaleDateString();
+
+        fetch('/quoteData')
+            .then(response => response.json())
+            .then(data => {
+                if (data) editPage(data);
+            });
+
+        function editPage(data) {
+            addElement('header', 'h1', personal.company)
+            addElement('header', 'h1', 'Quotation', 'color: #a6a6a6;')
+
+            addElement('provider-info', 'p', personal.address[0])
+            addElement('provider-info', 'p', personal.address[1])
+            addElement('provider-info', 'p', personal.phone)
+
+            addElement('customer-table-1', 'td', date)
+
+            
+            addElement('customer-table-2', 'td', data['reference'])
+            addElement('customer-table-3', 'td', data['customer-name'])
+
+            addElement('client', 'p', data['client-name'])
+            addElement('client', 'p', data['address'])
+
+            for (let i = 0; i < data['comment'].length; i++) {
+                if (data['comment'][i] !== '') addElement('comments', 'p', '• ' + data['comment'][i], 'font-size: 18px; padding: 10px 0')
+            }
+
+            let table = document.getElementById("costs")
+            let total = 0
+            let tax = 0
+
+            for (let i=0; i<data['cost-description'].length; i++) {
+                table.innerHTML += `<tr><th class='description'>${data['cost-description'][i]}</th><th class='cost'>$${(Math.round((Number(data['cost-amount'][i]) + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
+                total += Number(data['cost-amount'][i])
+            }
+
+            table.innerHTML += `<tr><th class='description'></th><th class='cost'></th></tr>`
+
+            tax = total * 0.05
+            total += tax
+
+            table.innerHTML += `<tr><th class='description'>${'GST'}</th><th class='cost'>$${(Math.round((tax + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
+
+            table.innerHTML += `<tr><th class='description-total'>${'Total'}</th><th class='cost-total'>$${(Math.round((total + Number.EPSILON) * 100) / 100).toFixed(2)}</th></tr>`
+            
+            addElement('contact-outro', 'p', `If you have any questions concerning this quotation, contact me at ${personal.phone} or ${personal.email}`, 'text-align: center')
+        }
+
+        function addElement(id, type, content, style) {
+            var div = document.getElementById(id);
+            var element = document.createElement(type);
+            element.textContent = content;
+
+            if (style !== undefined) {
+                var styles = style.split(';');
+
+                for (var i = 0; i < styles.length; i++) {
+                    var stylePair = styles[i].split(':');
+                    if (stylePair.length == 2) {
+                        var property = stylePair[0].trim();
+                        var value = stylePair[1].trim();
+                        element.style[property] = value;
+                        }
+                    }
+            }
+            div.appendChild(element);
+        }
+    </script>
+</html>

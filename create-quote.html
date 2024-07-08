@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dynamic Form</title>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
+    <link rel="stylesheet" href="assets/css/style-form.css">
+</head>
+<body>
+    <img src="assets/img/seal.png" id="rotatingImage" style="display: none; position: absolute;" alt="Rotating PNG">
+    <form id="dynamic-form" action="/submit-quote" method="post">
+        <button type="button" id="openModal">Previous Quotes</button>
+        <h1>Quote Generator v4</h1>
+        <h2>Client Information</h2>
+        <div class="input-group">
+            <label for="client-name">Client Name</label><br>
+            <input type="text" id="client-name" name="client-name" placeholder="John Smith" autofocus><br>
+            
+            <label for="address">Client Address</label><br>
+            <input type="text" id="address" name="address" placeholder="1234 Streetname Ave, City"><br>
+            
+            <label for="phone">Client Phone number</label><br>
+            <input type="tel" id="phone" name="phone" placeholder="123-456-7890"><br>
+            
+            <label for="reference">Quote Reference</label><br>
+            <div style="display: flex; align-items: center;">
+                <input type="text" id="reference" name="reference" placeholder="Client-reference" style="flex-grow: 1;">
+                <button type="button" onclick="generateReference()" style="margin-left: 10px;">Generate Reference</button>
+            </div>
+            
+            <label for="customer-name">Customer Name</label><br>
+            <div style="display: flex; align-items: center;">
+                <input type="text" id="customer-name" name="customer-name" placeholder="John Smith" style="flex-grow: 1;">
+                <button type="button" onclick="generateCustomer()" style="margin-left: 10px;">Same as Client</button>
+            </div>
+        </div><br>
+        
+        <h2>Quote Comments</h2>
+        <div id="comment-fields">
+            <div class="input-group">
+                <label for="comment">Comments:</label><br>
+                <input type="text" id="comment" name="comment" placeholder="Quote Comments"><br>
+            </div>
+        </div>
+        
+        <button type="button" onclick="addComment()">Add Comment</button>
+        <button type="button" onclick="removeComment()">Remove Comment</button><br>
+        
+        <h2>Quote Costs</h2>
+        <div id="cost-fields">
+            <div class="input-group">
+                <label for="cost-description">Costs:</label><br>
+                <input type="text" id="cost-description" name="cost-description" placeholder="Item Description"><br><br>
+                <input type="number" step="0.01" id="cost-amount" name="cost-amount" placeholder="123.45"><br><br>
+            </div>
+        </div>
+        
+        <button type="button" onclick="addCost()">Add Cost</button>
+        <button type="button" onclick="removeCost()">Remove Cost</button><br>
+        
+        <input type="submit" value="Submit">
+    </form>
+
+    <div id="quotesModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="scrollable-list">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var modal = document.getElementById("quotesModal");
+        var btn = document.getElementById("openModal");
+        var span = document.getElementsByClassName("close")[0];
+
+        btn.onclick = function() {
+            openQuotesModal();
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function openQuotesModal() {
+            fetch('/list-quotes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(files => {
+                const listContainer = document.querySelector('#quotesModal .scrollable-list');
+                listContainer.innerHTML = '<a href="#" id="triggerAnimation">🦭</a>';
+                files.forEach(file => {
+                    const pItem = document.createElement('p');
+                    pItem.textContent = file.reference;
+                    pItem.style.cursor = 'pointer';
+                    pItem.addEventListener('click', () => {
+                        editPage(file);
+                        modal.style.display = "none";
+                    });
+                    listContainer.appendChild(pItem);
+                });
+                document.getElementById('quotesModal').style.display = 'block';
+
+                document.getElementById('triggerAnimation').addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent the default link behavior
+                    var img = document.getElementById('rotatingImage');
+                    img.style.display = 'block'; // Show the image
+                    img.classList.add('show'); // Start the rotation animation
+
+                    // Wait for the animation to finish before hiding the image
+                    setTimeout(function() {
+                        img.style.display = 'none'; // Hide the image
+                        img.classList.remove('show'); // Reset the animation
+                    }, 2000); // Adjust the timeout to match the animation duration
+                });
+            })
+            .catch(error => console.error('Error fetching quote files:', error));
+        }
+
+        fetch('/quoteData')
+            .then(response => response.json())
+            .then(data => {
+                if (data) editPage(data);
+                console.log('loaded')
+            });
+
+        function addComment() {
+            var container = document.getElementById('comment-fields');
+            var div = document.createElement('div');
+            div.className = 'input-group';
+            div.innerHTML = '<input type="text" id="comment" name="comment" placeholder="Quote Comments"><br>';
+            container.appendChild(div);
+        }
+
+        function removeComment() {
+            var container = document.getElementById('comment-fields');
+            if (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function addCost() {
+            var container = document.getElementById('cost-fields');
+            var div = document.createElement('div');
+            div.className = 'input-group';
+            div.innerHTML = '<input type="text" id="cost-description" name="cost-description" placeholder="Item Description"><br><br><input type="number" step="0.01" id="cost-amount" name="cost-amount" placeholder="123.45"><br><br>';
+            container.appendChild(div);
+        }
+
+        function removeCost() {
+            var container = document.getElementById('cost-fields');
+            if (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function generateCustomer() {
+            var clientName = document.getElementById('client-name').value;
+            document.getElementById('customer-name').value = clientName;
+        }
+
+        function editPage(data) {
+            console.log(data)
+            document.getElementById('client-name').value = data['client-name'];
+            document.getElementById('address').value = data['address'];
+            document.getElementById('phone').value = data['phone'];
+            document.getElementById('reference').value = data['reference'];
+            document.getElementById('customer-name').value = data['customer-name'];
+
+            var commentFields = document.getElementById('comment-fields');
+            while (commentFields.children.length > 1) {
+                commentFields.removeChild(commentFields.lastChild);
+            }
+
+            var costFields = document.getElementById('cost-fields');
+            while (costFields.children.length > 1) {
+                costFields.removeChild(costFields.lastChild);
+            }
+
+            commentFields.children[0].children[2].value = '';
+            costFields.children[0].children[2].value = '';
+            costFields.children[0].children[5].value = '';
+
+            for (let i = 0; i < data['comment'].length; i++) {
+                if (i > 0) addComment();
+                commentFields.children[i].children[i === 0 ? 2 : 0].value = data['comment'][i];
+                console.log(i + ' ' + (i === 0 ? 2 : 0))
+            }
+
+            for (let i = 0; i < data['cost-description'].length; i++) {
+                if (i > 0) addCost();
+                costFields.children[i].children[i === 0 ? 2 : 0].value = data['cost-description'][i];
+                costFields.children[i].children[i === 0 ? 5 : 3].value = data['cost-amount'][i];
+            }
+        }
+
+        function generateReference() {
+            var referenceArray = []
+
+            var date = new Date();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+
+            var clientName = document.getElementById('client-name').value.split(' ')[0];
+            var address = document.getElementById('address').value;
+
+            if (clientName) referenceArray.push(clientName);
+            if (address) referenceArray.push(address.match(/(?:\d+\s)?([a-zA-Z\s]+)(?:\s[a-zA-Z]+)?/)[1].trim().split(' ')[0]);
+            if (!clientName && !address) referenceArray.push(date.getDate());
+            referenceArray.push(month);
+            referenceArray.push(year);
+
+            document.getElementById('reference').value = referenceArray.join('-');
+        }
+    </script>
+</body>
+</html>

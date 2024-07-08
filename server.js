@@ -1,75 +1,49 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
-const { type } = require('os');
 
 const app = express();
 const port = 3000;
 
-let temporaryStorage = {}; // This is a simple object to hold data temporarily
+let temporaryStorage = {};
 
-app.use(express.json()); // For parsing application/json
-app.use(bodyParser.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
-
-// Serve static files (CSS, JS)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve the HTML files
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'create-quote.html'));
-});
 
 app.post('/submit-quote', (req, res) => {
     const formData = req.body;
-
     temporaryStorage.quoteData = formData;
 
+    function ensureArrayAndRemoveEmptyStrings(key) {
+        if (typeof formData[key] === 'string') {
+            formData[key] = [formData[key]];
+        } else {
+            formData[key] = formData[key].filter(item => item !== '');
+        }
+    }
+
     if (!formData.reference) {
-        let referenceArray = []
+        const referenceArray = []
+        const date = new Date();
 
-        let date = new Date();
-        let month = date.getMonth() + 1;
-        let year = date.getFullYear();
-
-        if (formData['client-name']) referenceArray.push(formData['client-name'].split(' ')[0]);
-        if (formData['address']) referenceArray.push(formData['address'].match(/(?:\d+\s)?([a-zA-Z\s]+)(?:\s[a-zA-Z]+)?/)[1].trim().split(' ')[0]);
-        if (!formData['client-name'] && !formData['address']) referenceArray.push(date.getDate());
-        referenceArray.push(month);
-        referenceArray.push(year);
+        if (!formData['client-name'] && !formData['address']) referenceArray.push(date.getDate())
+        referenceArray.push(date.getMonth() + 1)
+        referenceArray.push(date.getFullYear())
+        if (formData['client-name']) referenceArray.push(formData['client-name'].split(' ')[0])
+        if (formData['address']) referenceArray.push(formData['address'].match(/(?:\d+\s)?([a-zA-Z\s]+)(?:\s[a-zA-Z]+)?/)[1].trim().split(' ')[0])
+        
 
         formData.reference = referenceArray.join('-');
     }
 
-    if (typeof formData['comment'] === 'string') {
-        formData['comment'] = [formData['comment']];
-    }
-    else {
-        for (let comment in formData['comment']) {
-            if (comment === '') delete comment;
-        }
-    }
+    formData['comment'] = Array.isArray(formData['comment']) ? formData['comment'].filter(c => c.trim() !== '') : [formData['comment']].filter(c => c && c.trim() !== '');
 
-    if (typeof formData['cost-description'] === 'string') {
-        formData['cost-description'] = [formData['cost-description']];
-    }
-    else {
-        for (let costDescription in formData['cost-description']) {
-            if (costDescription === '') delete costDescription;
-        }
-    }
+    ensureArrayAndRemoveEmptyStrings('comment');
+    ensureArrayAndRemoveEmptyStrings('cost-description');
+    ensureArrayAndRemoveEmptyStrings('cost-amount');
 
-    if (typeof formData['cost-amount'] === 'string') {
-        formData['cost-amount'] = [formData['cost-amount']];
-    }
-    else {
-        for (let costAmount in formData['cost-amount']) {
-            if (costAmount === '') delete costAmount;
-        }
-    }
-
-     // Convert formData to JSON string
-     const jsonData = JSON.stringify(formData);
+    const jsonData = JSON.stringify(formData);
 
     fs.writeFile(`quotes/${formData.reference}.json`, jsonData, (err) => {
         if (err) {
@@ -97,12 +71,14 @@ app.post('/list-quotes', (req, res) => {
     });
 });
 
-// Serve the create quote page
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'create-quote.html'));
+});
+
 app.get('/create', (req, res) => {
     res.sendFile(path.join(__dirname, 'create-quote.html'));
 });
 
-// Serve the display quote page
 app.get('/display', (req, res) => {
     res.sendFile(path.join(__dirname, 'display-quote.html'));
 });

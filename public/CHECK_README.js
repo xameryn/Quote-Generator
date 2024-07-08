@@ -6,6 +6,7 @@ var personal = {
     address: ['Street & Address', 'City, Province/State'],
     tax_names: ['GST', 'PST'],
     tax_rates: [5, 7],
+    end_note: 'Thank you for your business' // Appears at end of quote
 }
 
 export { personal }

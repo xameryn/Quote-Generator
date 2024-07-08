@@ -27,12 +27,11 @@ app.post('/submit-quote', (req, res) => {
         const referenceArray = []
         const date = new Date();
 
-        if (!formData['client-name'] && !formData['address']) referenceArray.push(date.getDate())
-        referenceArray.push(date.getMonth() + 1)
-        referenceArray.push(date.getFullYear())
         if (formData['client-name']) referenceArray.push(formData['client-name'].split(' ')[0])
         if (formData['address']) referenceArray.push(formData['address'].match(/(?:\d+\s)?([a-zA-Z\s]+)(?:\s[a-zA-Z]+)?/)[1].trim().split(' ')[0])
-        
+        if (!formData['client-name'] && !formData['address']) referenceArray.push(date.getDate())
+        referenceArray.push(date.getMonth() + 1)
+        referenceArray.push(date.getFullYear())        
 
         formData.reference = referenceArray.join('-');
     }

@@ -13,6 +13,7 @@ Self-hosted quotation generator for business use.
 ### Setup
 - Duplicate `public/CHECK_README.js` and rename it to `public/personal.js`
 - Add desired info to the new file
+- Run `init.bat` to download node modules ([must have Node installed on system](https://nodejs.org/en/download/prebuilt-installer))
 - Run `run.bat` to run on `localhost:3000`
 
 ### Images

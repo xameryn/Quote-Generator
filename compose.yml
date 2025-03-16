@@ -1,0 +1,13 @@
+version: '3'
+services:
+  quote-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quote-generator
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./quotes:/usr/src/app/quotes
+    command: npm start

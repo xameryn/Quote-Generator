@@ -7,7 +7,7 @@ services:
     container_name: quote-generator
     ports:
       - "3000:3000"
-    restart: unless-stopped
-    volumes:
+    restart: unless-stopped    volumes:
       - ./quotes:/usr/src/app/quotes
+      - ./profiles:/usr/src/app/profiles
     command: npm start

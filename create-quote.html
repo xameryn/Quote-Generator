@@ -5,14 +5,16 @@
     <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet'>
     <link rel="stylesheet" href="assets/css/style-form.css">
 </head>
-<body>
-    <div id="seal-container">
+<body>    <div id="seal-container">
         <img src="assets/img/seal.png" id="seal" style="display: none;" alt="Rotating PNG">
-    </div>
-    <form id="dynamic-form" action="/submit-quote" method="post">
-        <button type="button" id="openModal">Previous Quotes</button>
+    </div>    <form id="dynamic-form" action="/submit-quote" method="post">
+        <div class="form-header">
+            <button type="button" id="openQuotesModal">Previous Quotes</button>
+            <button type="button" id="openProfileModal" class="top-right-button">Saved Profiles</button>
+        </div>
+        <div class="input-group"></div>
         <h1>Quote Generator v4</h1>
-        <h2>Client Information</h2>
+        <h2>Client Information</h2>        
         <div class="input-group">
             <label for="client-name">Client Name</label><br>
             <input type="text" id="client-name" name="client-name" placeholder="John Smith" autofocus><br>
@@ -75,10 +77,79 @@
         </div>
     </div>
 
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Saved Profiles</h2>
+            <div class="scrollable-list" id="profileList">
+            </div>
+            <hr>
+            <h3>Create New Profile</h3>
+            <form id="profileForm">
+                <div class="input-group">
+                    <label for="profileName">Profile Name:</label>
+                    <input type="text" id="profileName" name="profileName" required>
+                </div>
+                <div class="input-group">
+                    <label for="company">Company Name:</label>
+                    <input type="text" id="company" name="company" required>
+                </div>
+                <div class="input-group">
+                    <label for="name">Your Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input type="text" id="email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="profilePhone">Phone:</label>
+                    <input type="text" id="profilePhone" name="phone" required>
+                </div>
+                <div class="input-group">
+                    <label for="address1">Address Line 1:</label>
+                    <input type="text" id="address1" name="address1" required>
+                </div>
+                <div class="input-group">
+                    <label for="address2">Address Line 2:</label>
+                    <input type="text" id="address2" name="address2">
+                </div>
+                <div class="input-group">
+                    <label for="units">Currency Symbol:</label>
+                    <input type="text" id="units" name="units" placeholder="$" required>
+                </div>
+                <div class="input-group">
+                    <label for="document_type">Document Type:</label>
+                    <input type="text" id="document_type" name="document_type" placeholder="Quotation" required>
+                </div>
+                <div class="input-group">
+                    <label for="end_note">End Note:</label>
+                    <input type="text" id="end_note" name="end_note" placeholder="For any concerns, reach out to...">
+                </div>
+                <div class="input-group">
+                    <label for="foot_note">Footer Note:</label>
+                    <input type="text" id="foot_note" name="foot_note" placeholder="Thank you for your business">
+                </div>
+                <div class="input-group">
+                    <label for="tax_names">Tax Names (comma-separated):</label>
+                    <input type="text" id="tax_names" name="tax_names" placeholder="GST, PST">
+                </div>
+                <div class="input-group">
+                    <label for="tax_rates">Tax Rates (comma-separated %):</label>
+                    <input type="text" id="tax_rates" name="tax_rates" placeholder="5, 7">
+                </div>
+                <button type="submit" style="width: 100%;">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        var modal = document.getElementById("quotesModal");
-        var btn = document.getElementById("openModal");
-        var span = document.getElementsByClassName("close")[0];
+        var quotesModal = document.getElementById("quotesModal");
+        var openQuotesPage = document.getElementById("openQuotesModal");
+        var profileModal = document.getElementById("profileModal");
+        var openProfilePage = document.getElementById("openProfileModal");
+        
+        var span = document.getElementsByClassName("close");
 
         document.getElementById('clear-button').addEventListener('click', function(event) {
             if (confirm('Are you sure you want to clear the quote?')) {
@@ -86,18 +157,30 @@
             }
         });
 
-        btn.onclick = function() {
+        openQuotesPage.onclick = function() {
             openQuotesModal();
-            modal.style.display = "block";
+            quotesModal.style.display = "block";
         }
 
-        span.onclick = function() {
-            modal.style.display = "none";
+        openProfilePage.onclick = function() {
+            openProfileModal();
+            profileModal.style.display = "block";
+        }
+
+        // Close modal functionality for both modals
+        for (let i = 0; i < span.length; i++) {
+            span[i].onclick = function() {
+                quotesModal.style.display = "none";
+                profileModal.style.display = "none";
+            }
         }
 
         window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+            if (event.target == quotesModal) {
+                quotesModal.style.display = "none";
+            }
+            if (event.target == profileModal) {
+                profileModal.style.display = "none";
             }
         }
 
@@ -118,19 +201,21 @@
                     pItem.style.cursor = 'pointer';
                     pItem.addEventListener('click', () => {
                         editPage(file);
-                        modal.style.display = "none";
+                        quotesModal.style.display = "none";
                     });
                     listContainer.appendChild(pItem);
                 })
-                document.getElementById('quotesModal').style.display = 'block';
-
-                document.getElementById('triggerAnimation').addEventListener('click', function(e) {
+                document.getElementById('quotesModal').style.display = 'block';                document.getElementById('triggerAnimation').addEventListener('click', function(e) {
                     e.preventDefault();
+                    var container = document.getElementById('seal-container');
                     var img = document.getElementById('seal');
+                    
+                    container.classList.add('show');
                     img.style.display = 'block';
                     img.classList.add('show');
 
                     setTimeout(function() {
+                        container.classList.remove('show');
                         img.style.display = 'none';
                         img.classList.remove('show');
                     }, 2000);
@@ -139,122 +224,378 @@
             .catch(error => console.error(error));
         }
 
-        fetch('/quoteData')
+        function openProfileModal() {
+            fetch('/list-profiles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(profiles => {
+                const listContainer = document.getElementById('profileList');
+                listContainer.innerHTML = '';
+                
+                if (profiles.length === 0) {
+                    const noProfiles = document.createElement('p');
+                    noProfiles.textContent = 'No profiles saved yet.';
+                    noProfiles.style.fontStyle = 'italic';
+                    listContainer.appendChild(noProfiles);
+                } else {                    profiles.forEach(profile => {
+                        const profileDiv = document.createElement('div');
+                        profileDiv.className = 'profile-item';
+                        profileDiv.style.marginBottom = '10px';
+                        profileDiv.style.padding = '10px';
+                        profileDiv.style.border = '1px solid #ccc';
+                        profileDiv.style.borderRadius = '5px';
+                        profileDiv.style.position = 'relative';
+                          const profileContent = document.createElement('div');
+                        profileContent.className = 'profile-content';
+                        profileContent.style.cursor = 'pointer';
+                        profileContent.style.paddingRight = '150px'; // Space for buttons
+                        
+                        const profileTitle = document.createElement('h4');
+                        profileTitle.textContent = profile.profileName;
+                        profileTitle.style.margin = '0 0 5px 0';
+                        
+                        const profileDetails = document.createElement('p');
+                        profileDetails.textContent = `${profile.company} - ${profile.name}`;
+                        profileDetails.style.margin = '0';
+                        profileDetails.style.fontSize = '14px';
+                        profileDetails.style.color = '#666';
+                        
+                        profileContent.appendChild(profileTitle);
+                        profileContent.appendChild(profileDetails);
+                          // Buttons container
+                        const buttonsContainer = document.createElement('div');
+                        buttonsContainer.className = 'profile-buttons';
+                        buttonsContainer.style.position = 'absolute';
+                        buttonsContainer.style.right = '10px';
+                        buttonsContainer.style.top = '50%';
+                        buttonsContainer.style.transform = 'translateY(-50%)';
+                        buttonsContainer.style.display = 'flex';
+                        buttonsContainer.style.gap = '5px';
+                        
+                        // Edit button
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Edit';
+                        editBtn.className = 'btn-small btn-primary';
+                        editBtn.style.fontSize = '12px';
+                        editBtn.style.padding = '4px 8px';
+                        editBtn.style.backgroundColor = '#007bff';
+                        editBtn.style.color = 'white';
+                        editBtn.style.border = 'none';
+                        editBtn.style.borderRadius = '3px';
+                        editBtn.style.cursor = 'pointer';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            editProfile(profile);
+                        };
+                        
+                        // Duplicate button
+                        const duplicateBtn = document.createElement('button');
+                        duplicateBtn.textContent = 'Duplicate';
+                        duplicateBtn.className = 'btn-small btn-secondary';
+                        duplicateBtn.style.fontSize = '12px';
+                        duplicateBtn.style.padding = '4px 8px';
+                        duplicateBtn.style.backgroundColor = '#6c757d';
+                        duplicateBtn.style.color = 'white';
+                        duplicateBtn.style.border = 'none';
+                        duplicateBtn.style.borderRadius = '3px';
+                        duplicateBtn.style.cursor = 'pointer';
+                        duplicateBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            duplicateProfile(profile);
+                        };
+                        
+                        // Delete button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.className = 'btn-small btn-danger';
+                        deleteBtn.style.fontSize = '12px';
+                        deleteBtn.style.padding = '4px 8px';
+                        deleteBtn.style.backgroundColor = '#dc3545';
+                        deleteBtn.style.color = 'white';
+                        deleteBtn.style.border = 'none';
+                        deleteBtn.style.borderRadius = '3px';
+                        deleteBtn.style.cursor = 'pointer';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            deleteProfile(profile.profileName);
+                        };
+                        
+                        buttonsContainer.appendChild(editBtn);
+                        buttonsContainer.appendChild(duplicateBtn);
+                        buttonsContainer.appendChild(deleteBtn);
+                        
+                        profileContent.addEventListener('click', () => {
+                            selectProfile(profile);
+                            profileModal.style.display = "none";
+                        });
+                        
+                        profileDiv.appendChild(profileContent);
+                        profileDiv.appendChild(buttonsContainer);
+                        listContainer.appendChild(profileDiv);
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading profiles:', error));
+        }        function selectProfile(profile) {
+            // Store the selected profile data in sessionStorage
+            const profileData = {
+                company: profile.company,
+                name: profile.name,
+                phone: profile.phone,
+                email: profile.email,
+                address: profile.address || [profile.address1 || '', profile.address2 || ''].filter(addr => addr),
+                units: profile.units || '$',
+                tax_names: profile.tax_names || [],
+                tax_rates: profile.tax_rates || [],
+                end_note: profile.end_note || '',
+                foot_note: profile.foot_note || '',
+                document_type: profile.document_type || 'Quotation'
+            };
+
+            sessionStorage.setItem('selectedProfile', JSON.stringify(profileData));
+            alert(`Profile "${profile.profileName}" selected successfully!`);
+        }
+
+        // Handle profile form submission
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const profileData = {};
+            
+            // Convert form data to object
+            for (let [key, value] of formData.entries()) {
+                profileData[key] = value;
+            }
+            
+            // Handle address array
+            profileData.address = [profileData.address1, profileData.address2].filter(addr => addr);
+            delete profileData.address1;
+            delete profileData.address2;
+            
+            // Handle tax arrays
+            if (profileData.tax_names) {
+                profileData.tax_names = profileData.tax_names.split(',').map(name => name.trim()).filter(name => name);
+            } else {
+                profileData.tax_names = [];
+            }
+            
+            if (profileData.tax_rates) {
+                profileData.tax_rates = profileData.tax_rates.split(',').map(rate => parseFloat(rate.trim())).filter(rate => !isNaN(rate));
+            } else {
+                profileData.tax_rates = [];
+            }
+              // Check if we're editing an existing profile
+            const isEditing = this.dataset.editingProfile;
+            const endpoint = isEditing ? '/update-profile' : '/submit-profile';
+            
+            if (isEditing) {
+                profileData.originalProfileName = this.dataset.editingProfile;
+            }
+            
+            // Submit profile
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(response => response.json())            .then(data => {                if (data.success) {
+                    const action = isEditing ? 'updated' : 'saved';
+                    alert(`Profile ${action} successfully!`);
+                    this.reset();
+                    delete this.dataset.editingProfile;
+                      // Reset UI
+                    document.querySelector('#profileForm button[type="submit"]').textContent = 'Save Profile';
+                    document.querySelector('#profileModal h2').textContent = 'Saved Profiles';
+                    document.querySelector('#profileModal .modal-content').classList.remove('editing');
+                    
+                    // Remove the edit button container and restore original button layout
+                    const buttonContainer = document.getElementById('editButtonContainer');
+                    if (buttonContainer) {
+                        const submitButton = buttonContainer.querySelector('button[type="submit"]');
+                        const form = document.getElementById('profileForm');
+                        form.appendChild(submitButton);
+                        buttonContainer.remove();
+                    }
+                    
+                    const cancelButton = document.getElementById('cancelEditBtn');
+                    if (cancelButton) {
+                        cancelButton.style.display = 'none';
+                    }
+                    
+                    // Show profile list and refresh it
+                    document.getElementById('profileList').style.display = 'block';
+                    openProfileModal(); // Refresh the profile list
+                } else {
+                    alert('Error saving profile');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving profile');
+            });});
+
+        // Duplicate profile function
+        function duplicateProfile(profile) {
+            const newProfileName = prompt(`Enter name for duplicated profile (original: "${profile.profileName}"):`);
+            if (!newProfileName || newProfileName.trim() === '') {
+                return;
+            }
+
+            const duplicatedProfile = {
+                ...profile,
+                profileName: newProfileName.trim()
+            };
+
+            fetch('/save-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(duplicatedProfile)
+            })
             .then(response => response.json())
             .then(data => {
-                if (data) editPage(data);
-                console.log('loaded')
+                if (data.success) {
+                    alert(`Profile duplicated as "${newProfileName}" successfully!`);
+                    openProfileModal(); // Refresh the profile list
+                } else {
+                    alert('Error duplicating profile');
+                }
             })
-            .catch(error => console.error(error));
-
-        function addComment() {
-            var container = document.getElementById('comment-fields');
-            var div = document.createElement('div');
-            div.className = 'input-group';
-            div.innerHTML = '<input type="text" id="comment" name="comment" placeholder="Quote Comments"><br>';
-            container.appendChild(div);
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error duplicating profile');
+            });
         }
 
-        function removeComment() {
-            var container = document.getElementById('comment-fields');
-            if (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
-            else {
-                container.children[0].children[2].value = '';
-            }
-        }
-
-        function addCost() {
-            var container = document.getElementById('cost-fields');
-            var div = document.createElement('div');
-            div.className = 'input-group';
-            div.innerHTML = '<input type="text" id="cost-description" name="cost-description" placeholder="Item Description"><br><br><input type="number" step="0.01" id="cost-amount" name="cost-amount" placeholder="123.45"><br><br>';
-            container.appendChild(div);
-        }
-
-        function removeCost() {
-            var container = document.getElementById('cost-fields');
-            if (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
-            else {
-                container.children[0].children[2].value = '';
-                container.children[0].children[5].value = '';
-            }
-        }
-
-        function clearQuote() {
-            document.querySelector('form').reset();
-
-            while (document.getElementById('comment-fields').children.length > 1) {
-                removeComment();
-            }
-            removeComment();
-
-            while (document.getElementById('cost-fields').children.length > 1) {
-                removeCost();
-            }
-            removeCost();
-        }
-
-        function generateCustomer() {
-            var clientName = document.getElementById('client-name').value;
-            document.getElementById('customer-name').value = clientName;
-        }
-
-        function editPage(data) {
-            console.log(data)
-            document.getElementById('client-name').value = data['client-name'];
-            document.getElementById('address').value = data['address'];
-            document.getElementById('phone').value = data['phone'];
-            document.getElementById('reference').value = data['reference'];
-            document.getElementById('customer-name').value = data['customer-name'];
-
-            var commentFields = document.getElementById('comment-fields');
-            while (commentFields.children.length > 1) {
-                commentFields.removeChild(commentFields.lastChild);
+        // Delete profile function
+        function deleteProfile(profileName) {
+            if (!confirm(`Are you sure you want to delete the profile "${profileName}"? This action cannot be undone.`)) {
+                return;
             }
 
-            var costFields = document.getElementById('cost-fields');
-            while (costFields.children.length > 1) {
-                costFields.removeChild(costFields.lastChild);
+            fetch('/delete-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ profileName: profileName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Profile "${profileName}" deleted successfully!`);
+                    openProfileModal(); // Refresh the profile list
+                } else {
+                    alert('Error deleting profile');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting profile');            });
+        }        // Edit profile function
+        function editProfile(profile) {
+            // Hide the profile list and show the create form
+            document.getElementById('profileList').style.display = 'none';
+            document.querySelector('#profileModal h2').textContent = 'Edit Profile';
+            document.querySelector('#profileModal .modal-content').classList.add('editing');
+              // Populate the form with existing profile data
+            document.getElementById('profileName').value = profile.profileName || '';
+            document.getElementById('company').value = profile.company || '';
+            document.getElementById('name').value = profile.name || '';
+            document.getElementById('profilePhone').value = profile.phone || '';
+            document.getElementById('email').value = profile.email || '';
+            
+            // Handle address array properly
+            if (profile.address && Array.isArray(profile.address)) {
+                document.getElementById('address1').value = profile.address[0] || '';
+                document.getElementById('address2').value = profile.address[1] || '';
+            } else {
+                document.getElementById('address1').value = profile.address1 || '';
+                document.getElementById('address2').value = profile.address2 || '';
             }
-
-            commentFields.children[0].children[2].value = '';
-            costFields.children[0].children[2].value = '';
-            costFields.children[0].children[5].value = '';
-
-            for (let i = 0; i < data['comment'].length; i++) {
-                if (i > 0) addComment();
-                commentFields.children[i].children[i === 0 ? 2 : 0].value = data['comment'][i];
-                console.log(i + ' ' + (i === 0 ? 2 : 0))
+            
+            document.getElementById('units').value = profile.units || '$';
+            document.getElementById('tax_names').value = (profile.tax_names || []).join(', ');
+            document.getElementById('tax_rates').value = (profile.tax_rates || []).join(', ');
+            document.getElementById('end_note').value = profile.end_note || '';
+            document.getElementById('foot_note').value = profile.foot_note || '';
+            document.getElementById('document_type').value = profile.document_type || 'Quotation';
+            
+            // Store the original profile name for updating
+            document.getElementById('profileForm').dataset.editingProfile = profile.profileName;
+              // Change the form submit button text
+            const submitButton = document.querySelector('#profileForm button[type="submit"]');
+            submitButton.textContent = 'Update Profile';
+            
+            // Add a cancel button with proper container
+            let cancelButton = document.getElementById('cancelEditBtn');
+            if (!cancelButton) {
+                cancelButton = document.createElement('button');
+                cancelButton.type = 'button';
+                cancelButton.id = 'cancelEditBtn';
+                cancelButton.textContent = 'Cancel Edit';
+                cancelButton.style.backgroundColor = '#6c757d';
+                cancelButton.style.color = 'white';
+                cancelButton.style.border = 'none';
+                cancelButton.style.padding = '10px 20px';
+                cancelButton.style.borderRadius = '5px';
+                cancelButton.style.cursor = 'pointer';
+                cancelButton.onclick = cancelEdit;
+                
+                // Create a button container for proper centering
+                let buttonContainer = document.createElement('div');
+                buttonContainer.id = 'editButtonContainer';
+                buttonContainer.style.display = 'flex';
+                buttonContainer.style.justifyContent = 'center';
+                buttonContainer.style.gap = '10px';
+                buttonContainer.style.marginTop = '20px';
+                
+                // Move submit button to container
+                const submitButtonParent = submitButton.parentNode;
+                submitButtonParent.removeChild(submitButton);
+                buttonContainer.appendChild(submitButton);
+                buttonContainer.appendChild(cancelButton);
+                submitButtonParent.appendChild(buttonContainer);
             }
-
-            for (let i = 0; i < data['cost-description'].length; i++) {
-                if (i > 0) addCost();
-                costFields.children[i].children[i === 0 ? 2 : 0].value = data['cost-description'][i];
-                costFields.children[i].children[i === 0 ? 5 : 3].value = data['cost-amount'][i];
+            cancelButton.style.display = 'inline-block';        }
+        
+        // Cancel edit function
+        function cancelEdit() {
+            // Reset the form
+            document.getElementById('profileForm').reset();
+            delete document.getElementById('profileForm').dataset.editingProfile;
+            
+            // Reset button text and modal title
+            const submitButton = document.querySelector('#profileForm button[type="submit"]');
+            submitButton.textContent = 'Save Profile';
+            document.querySelector('#profileModal h2').textContent = 'Saved Profiles';
+            document.querySelector('#profileModal .modal-content').classList.remove('editing');
+            
+            // Remove the edit button container and restore original button layout
+            const buttonContainer = document.getElementById('editButtonContainer');
+            if (buttonContainer) {
+                const submitButton = buttonContainer.querySelector('button[type="submit"]');
+                const form = document.getElementById('profileForm');
+                form.appendChild(submitButton);
+                buttonContainer.remove();
             }
-        }
-
-        function generateReference() {
-            var referenceArray = []
-
-            var date = new Date();
-            var month = date.getMonth() + 1;
-            var year = date.getFullYear();
-
-            var clientName = document.getElementById('client-name').value.split(' ')[0];
-            var address = document.getElementById('address').value;
-
-            if (clientName) referenceArray.push(clientName);
-            if (address) referenceArray.push(address.match(/(?:\d+\s)?([a-zA-Z\s]+)(?:\s[a-zA-Z]+)?/)[1].trim().split(' ')[0]);
-            if (!clientName && !address) referenceArray.push(date.getDate());
-            referenceArray.push(month);
-            referenceArray.push(year);
-
-            document.getElementById('reference').value = referenceArray.join('-');
+            
+            // Hide cancel button
+            const cancelButton = document.getElementById('cancelEditBtn');
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+            
+            // Show profile list
+            document.getElementById('profileList').style.display = 'block';
         }
     </script>
 </body>

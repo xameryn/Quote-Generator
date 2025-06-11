@@ -49,15 +49,21 @@
                 <h2 class="hide-on-print" style="color: red;">Press CTRL+P and 'Save as PDF' to Save Quote</h2>
                 <input type="submit" value="Return to Generator" class="hide-on-print" onclick="window.location.href='/create'">
             </div>
-        </div>
-    </body>
-    <script type="module">
-        import { personal } from './personal.js';
-        
-        window.personal = personal;
-    </script>
-    <script>
-        personal = window.personal;
+        </div>    </body>    <script>
+        // Try to get profile from sessionStorage or fallback to default
+        let personal = JSON.parse(sessionStorage.getItem('selectedProfile')) || {
+            company: 'Company Name',
+            name: 'Your Name',
+            phone: '123.456.7890',
+            email: 'email@mail.com',
+            address: ['Street & Address', 'City, Province/State'],
+            units: '$',
+            tax_names: ['GST', 'PST'],
+            tax_rates: [5, 7],
+            end_note: 'For any concerns, reach out to 123.456.7890 or email@mail.com',
+            foot_note: 'Thank you for your business',
+            document_type: 'Quotation'
+        };
 
         var html = ''
         var date = new Date();

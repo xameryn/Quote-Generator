@@ -54,6 +54,86 @@ app.post('/submit-quote', (req, res) => {
     });
 });
 
+app.post('/submit-profile', (req, res) => {
+    const profileData = req.body;
+    
+    if (!profileData.profileName) {
+        return res.status(400).send('Profile name is required');
+    }
+
+    // Ensure arrays for tax names and rates
+    if (typeof profileData.tax_names === 'string') {
+        profileData.tax_names = profileData.tax_names ? [profileData.tax_names] : [];
+    }
+    if (typeof profileData.tax_rates === 'string') {
+        profileData.tax_rates = profileData.tax_rates ? [profileData.tax_rates] : [];
+    }
+
+    // Ensure arrays for address
+    if (typeof profileData.address === 'string') {
+        profileData.address = profileData.address ? [profileData.address] : [];
+    }
+
+    const jsonData = JSON.stringify(profileData, null, 2);
+
+    fs.writeFile(`profiles/${profileData.profileName}.json`, jsonData, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error saving profile');
+        } else {
+            res.json({ success: true, message: 'Profile saved successfully' });
+        }
+    });
+});
+
+app.post('/save-profile', (req, res) => {
+    const profileData = req.body;
+    const filename = `profiles/${profileData.profileName}.json`;
+    
+    fs.writeFile(filename, JSON.stringify(profileData, null, 2), (err) => {
+        if (err) {
+            console.error(err);
+            res.json({ success: false, message: 'Error saving profile' });
+        } else {
+            console.log(`Profile saved: ${filename}`);
+            res.json({ success: true, message: 'Profile saved successfully' });
+        }
+    });
+});
+
+app.post('/delete-profile', (req, res) => {
+    const { profileName } = req.body;
+    const filename = `profiles/${profileName}.json`;
+    
+    fs.unlink(filename, (err) => {
+        if (err) {
+            console.error(err);
+            res.json({ success: false, message: 'Error deleting profile' });
+        } else {
+            console.log(`Profile deleted: ${filename}`);
+            res.json({ success: true, message: 'Profile deleted successfully' });
+        }
+    });
+});
+
+app.post('/list-profiles', (req, res) => {
+    fs.readdir('profiles', (err, files) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Error reading profiles');
+        } else {
+            let profiles = [];
+            files.forEach(file => {
+                if (file.endsWith('.json')) {
+                    let data = fs.readFileSync(`profiles/${file}`);
+                    profiles.push(JSON.parse(data));
+                }
+            });
+            res.json(profiles);
+        }
+    });
+});
+
 app.post('/list-quotes', (req, res) => {
     fs.readdir('quotes', (err, files) => {
         if (err) {
@@ -68,6 +148,39 @@ app.post('/list-quotes', (req, res) => {
             res.json(quotes);
         }
     });
+});
+
+// Update profile endpoint
+app.post('/update-profile', (req, res) => {
+    const profileData = req.body;
+    const originalProfileName = profileData.originalProfileName;
+    const newProfileName = profileData.profileName;
+    
+    if (!originalProfileName || !newProfileName) {
+        return res.json({ success: false, error: 'Missing profile names' });
+    }
+    
+    const profilesDir = path.join(__dirname, 'profiles');
+    const originalFilePath = path.join(profilesDir, `${originalProfileName}.json`);
+    const newFilePath = path.join(profilesDir, `${newProfileName}.json`);
+    
+    try {
+        // Remove the originalProfileName from the data before saving
+        delete profileData.originalProfileName;
+        
+        // Write the updated profile data
+        fs.writeFileSync(newFilePath, JSON.stringify(profileData, null, 2));
+        
+        // If the profile name changed, delete the old file
+        if (originalProfileName !== newProfileName && fs.existsSync(originalFilePath)) {
+            fs.unlinkSync(originalFilePath);
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.json({ success: false, error: error.message });
+    }
 });
 
 app.get('/', (req, res) => {

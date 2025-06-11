@@ -13,7 +13,7 @@
             <button type="button" id="openProfileModal" class="top-right-button">Saved Profiles</button>
         </div>
         <div class="input-group"></div>
-        <h1>Quote Generator v4</h1>
+        <h1>Quote Generator v5</h1>
         <h2>Client Information</h2>        
         <div class="input-group">
             <label for="client-name">Client Name</label><br>
@@ -191,19 +191,89 @@
                     'Content-Type': 'application/json',
                 },
             })
-            .then(response => response.json())
-            .then(files => {
+            .then(response => response.json())            .then(files => {
                 const listContainer = document.querySelector('#quotesModal .scrollable-list');
                 listContainer.innerHTML = '<a href="#" id="triggerAnimation">🦭</a>';
                 files.forEach(file => {
-                    const pItem = document.createElement('p');
-                    pItem.textContent = file.reference;
-                    pItem.style.cursor = 'pointer';
-                    pItem.addEventListener('click', () => {
-                        editPage(file);
+                    const quoteDiv = document.createElement('div');
+                    quoteDiv.className = 'quote-item';
+                    quoteDiv.style.marginBottom = '10px';
+                    quoteDiv.style.padding = '10px';
+                    quoteDiv.style.border = '1px solid #ccc';
+                    quoteDiv.style.borderRadius = '5px';
+                    quoteDiv.style.position = 'relative';
+                    
+                    const quoteContent = document.createElement('div');
+                    quoteContent.className = 'quote-content';
+                    quoteContent.style.cursor = 'pointer';
+                    quoteContent.style.paddingRight = '100px'; // Space for buttons
+                    
+                    const quoteTitle = document.createElement('h4');
+                    quoteTitle.textContent = file.reference;
+                    quoteTitle.style.margin = '0 0 5px 0';
+                    
+                    const quoteDetails = document.createElement('p');
+                    quoteDetails.textContent = `${file.clientName || 'Unknown Client'} - ${file.date || 'No Date'}`;
+                    quoteDetails.style.margin = '0';
+                    quoteDetails.style.fontSize = '14px';
+                    quoteDetails.style.color = '#666';
+                    
+                    quoteContent.appendChild(quoteTitle);
+                    quoteContent.appendChild(quoteDetails);
+                    
+                    // Buttons container
+                    const buttonsContainer = document.createElement('div');
+                    buttonsContainer.className = 'quote-buttons';
+                    buttonsContainer.style.position = 'absolute';
+                    buttonsContainer.style.right = '10px';
+                    buttonsContainer.style.top = '50%';
+                    buttonsContainer.style.transform = 'translateY(-50%)';
+                    buttonsContainer.style.display = 'flex';
+                    buttonsContainer.style.gap = '5px';
+                    
+                    // Duplicate button
+                    const duplicateBtn = document.createElement('button');
+                    duplicateBtn.textContent = 'Duplicate';
+                    duplicateBtn.className = 'btn-small btn-secondary';
+                    duplicateBtn.style.fontSize = '12px';
+                    duplicateBtn.style.padding = '4px 8px';
+                    duplicateBtn.style.backgroundColor = '#6c757d';
+                    duplicateBtn.style.color = 'white';
+                    duplicateBtn.style.border = 'none';
+                    duplicateBtn.style.borderRadius = '3px';
+                    duplicateBtn.style.cursor = 'pointer';
+                    duplicateBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        duplicateQuote(file);
+                    };
+                    
+                    // Delete button
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.className = 'btn-small btn-danger';
+                    deleteBtn.style.fontSize = '12px';
+                    deleteBtn.style.padding = '4px 8px';
+                    deleteBtn.style.backgroundColor = '#dc3545';
+                    deleteBtn.style.color = 'white';
+                    deleteBtn.style.border = 'none';
+                    deleteBtn.style.borderRadius = '3px';
+                    deleteBtn.style.cursor = 'pointer';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteQuote(file.reference);
+                    };
+                    
+                    buttonsContainer.appendChild(duplicateBtn);
+                    buttonsContainer.appendChild(deleteBtn);
+                    
+                    quoteContent.addEventListener('click', () => {
+                        loadQuoteForEditing(file);
                         quotesModal.style.display = "none";
                     });
-                    listContainer.appendChild(pItem);
+                    
+                    quoteDiv.appendChild(quoteContent);
+                    quoteDiv.appendChild(buttonsContainer);
+                    listContainer.appendChild(quoteDiv);
                 })
                 document.getElementById('quotesModal').style.display = 'block';                document.getElementById('triggerAnimation').addEventListener('click', function(e) {
                     e.preventDefault();
@@ -596,6 +666,256 @@
             
             // Show profile list
             document.getElementById('profileList').style.display = 'block';
+        }
+
+        // Load quote data into form for editing
+        function loadQuoteForEditing(quoteData) {
+            // Load basic information
+            document.getElementById('client-name').value = quoteData['client-name'] || '';
+            document.getElementById('address').value = quoteData['address'] || '';
+            document.getElementById('phone').value = quoteData['phone'] || '';
+            document.getElementById('reference').value = quoteData['reference'] || '';
+            document.getElementById('customer-name').value = quoteData['customer-name'] || '';
+            
+            // Clear existing dynamic fields first
+            clearQuote();
+            
+            // Load comments
+            if (quoteData['comment'] && Array.isArray(quoteData['comment'])) {
+                // Remove the default comment field first
+                const commentFields = document.getElementById('comment-fields');
+                commentFields.innerHTML = '';
+                
+                quoteData['comment'].forEach((comment, index) => {
+                    if (comment.trim() !== '') {
+                        addComment();
+                        const commentInputs = document.querySelectorAll('input[name="comment"]');
+                        if (commentInputs[index]) {
+                            commentInputs[index].value = comment;
+                        }
+                    }
+                });
+                
+                // If no comments, add one empty field
+                if (quoteData['comment'].length === 0 || quoteData['comment'].every(c => c.trim() === '')) {
+                    addComment();
+                }
+            } else {
+                // Single comment or no comments
+                addComment();
+                const commentInput = document.querySelector('input[name="comment"]');
+                if (commentInput && quoteData['comment']) {
+                    commentInput.value = quoteData['comment'];
+                }
+            }
+            
+            // Load costs
+            if (quoteData['cost-description'] && Array.isArray(quoteData['cost-description']) && 
+                quoteData['cost-amount'] && Array.isArray(quoteData['cost-amount'])) {
+                
+                // Remove the default cost field first
+                const costFields = document.getElementById('cost-fields');
+                costFields.innerHTML = '';
+                
+                for (let i = 0; i < quoteData['cost-description'].length; i++) {
+                    if (quoteData['cost-description'][i] && quoteData['cost-description'][i].trim() !== '') {
+                        addCost();
+                        const descriptionInputs = document.querySelectorAll('input[name="cost-description"]');
+                        const amountInputs = document.querySelectorAll('input[name="cost-amount"]');
+                        
+                        if (descriptionInputs[i]) {
+                            descriptionInputs[i].value = quoteData['cost-description'][i];
+                        }
+                        if (amountInputs[i]) {
+                            amountInputs[i].value = quoteData['cost-amount'][i];
+                        }
+                    }
+                }
+                
+                // If no costs, add one empty field
+                if (quoteData['cost-description'].length === 0 || 
+                    quoteData['cost-description'].every(desc => !desc || desc.trim() === '')) {
+                    addCost();
+                }
+            } else {
+                // Single cost or no costs
+                addCost();
+                const descInput = document.querySelector('input[name="cost-description"]');
+                const amountInput = document.querySelector('input[name="cost-amount"]');
+                if (descInput && quoteData['cost-description']) {
+                    descInput.value = quoteData['cost-description'];
+                }
+                if (amountInput && quoteData['cost-amount']) {
+                    amountInput.value = quoteData['cost-amount'];
+                }
+            }
+            
+            alert(`Quote "${quoteData['reference']}" loaded successfully!`);
+        }
+
+        // Dynamic form functions
+        function addComment() {
+            const commentFields = document.getElementById('comment-fields');
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+            inputGroup.innerHTML = `
+                <label for="comment">Comments:</label><br>
+                <input type="text" name="comment" placeholder="Quote Comments"><br>
+            `;
+            commentFields.appendChild(inputGroup);
+        }
+
+        function removeComment() {
+            const commentFields = document.getElementById('comment-fields');
+            const inputGroups = commentFields.querySelectorAll('.input-group');
+            if (inputGroups.length > 1) {
+                commentFields.removeChild(inputGroups[inputGroups.length - 1]);
+            }
+        }
+
+        function addCost() {
+            const costFields = document.getElementById('cost-fields');
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+            inputGroup.innerHTML = `
+                <label for="cost-description">Costs:</label><br>
+                <input type="text" name="cost-description" placeholder="Item Description"><br><br>
+                <label for="cost-amount">Cost Amount:</label><br>
+                <input type="number" step="0.01" name="cost-amount" placeholder="123.45"><br><br>
+            `;
+            costFields.appendChild(inputGroup);
+        }
+
+        function removeCost() {
+            const costFields = document.getElementById('cost-fields');
+            const inputGroups = costFields.querySelectorAll('.input-group');
+            if (inputGroups.length > 1) {
+                costFields.removeChild(inputGroups[inputGroups.length - 1]);
+            }
+        }
+
+        function clearQuote() {
+            // Clear all text inputs
+            const textInputs = document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]');
+            textInputs.forEach(input => {
+                input.value = '';
+            });
+
+            // Reset dynamic fields to single empty fields
+            const commentFields = document.getElementById('comment-fields');
+            commentFields.innerHTML = `
+                <div class="input-group">
+                    <label for="comment">Comments:</label><br>
+                    <input type="text" id="comment" name="comment" placeholder="Quote Comments"><br>
+                </div>
+            `;
+
+            const costFields = document.getElementById('cost-fields');
+            costFields.innerHTML = `
+                <div class="input-group">
+                    <label for="cost-description">Costs:</label><br>
+                    <input type="text" id="cost-description" name="cost-description" placeholder="Item Description"><br><br>
+                    <label for="cost-amount">Cost Amount:</label><br>
+                    <input type="number" step="0.01" id="cost-amount" name="cost-amount" placeholder="123.45"><br><br>
+                </div>
+            `;
+        }
+
+        function generateReference() {
+            const clientName = document.getElementById('client-name').value;
+            const address = document.getElementById('address').value;
+            const date = new Date();
+            
+            const referenceArray = [];
+            
+            if (clientName) {
+                referenceArray.push(clientName.split(' ')[0].toLowerCase());
+            }
+            
+            if (address) {
+                const streetMatch = address.match(/(?:\d+\s)?([a-zA-Z\s]+)(?:\s[a-zA-Z]+)?/);
+                if (streetMatch && streetMatch[1]) {
+                    referenceArray.push(streetMatch[1].trim().split(' ')[0].toLowerCase());
+                }
+            }
+            
+            if (!clientName && !address) {
+                referenceArray.push(date.getDate().toString());
+            }
+            
+            referenceArray.push((date.getMonth() + 1).toString());
+            referenceArray.push(date.getFullYear().toString());
+            
+            document.getElementById('reference').value = referenceArray.join('-');
+        }
+
+        function generateCustomer() {
+            const clientName = document.getElementById('client-name').value;
+            document.getElementById('customer-name').value = clientName;
+        }
+
+        // Duplicate quote function
+        function duplicateQuote(quote) {
+            const newReference = prompt(`Enter reference for duplicated quote (original: "${quote.reference}"):`, quote.reference);
+            if (!newReference || newReference.trim() === '') {
+                return;
+            }
+
+            // Create a copy of the quote with new reference
+            const duplicatedQuote = {
+                ...quote,
+                reference: newReference.trim(),
+                date: new Date().toLocaleDateString()
+            };
+
+            fetch('/submit-quote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(duplicatedQuote)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Quote duplicated as "${newReference}" successfully!`);
+                    openQuotesModal(); // Refresh the quotes list
+                } else {
+                    alert('Error duplicating quote');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error duplicating quote');
+            });
+        }
+
+        // Delete quote function
+        function deleteQuote(reference) {
+            if (!confirm(`Are you sure you want to delete the quote "${reference}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            fetch('/delete-quote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reference: reference })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Quote "${reference}" deleted successfully!`);
+                    openQuotesModal(); // Refresh the quotes list
+                } else {
+                    alert('Error deleting quote');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting quote');
+            });
         }
     </script>
 </body>

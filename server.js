@@ -150,6 +150,24 @@ app.post('/list-quotes', (req, res) => {
     });
 });
 
+// Delete quote endpoint
+app.post('/delete-quote', (req, res) => {
+    try {
+        const { reference } = req.body;
+        const filePath = path.join(__dirname, 'quotes', `${reference}.json`);
+        
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            res.json({ success: true, message: 'Quote deleted successfully' });
+        } else {
+            res.json({ success: false, error: 'Quote not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting quote:', error);
+        res.json({ success: false, error: error.message });
+    }
+});
+
 // Update profile endpoint
 app.post('/update-profile', (req, res) => {
     const profileData = req.body;

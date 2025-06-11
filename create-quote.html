@@ -207,13 +207,15 @@
                     quoteContent.className = 'quote-content';
                     quoteContent.style.cursor = 'pointer';
                     quoteContent.style.paddingRight = '100px'; // Space for buttons
-                    
-                    const quoteTitle = document.createElement('h4');
+                      const quoteTitle = document.createElement('h4');
                     quoteTitle.textContent = file.reference;
                     quoteTitle.style.margin = '0 0 5px 0';
                     
                     const quoteDetails = document.createElement('p');
-                    quoteDetails.textContent = `${file.clientName || 'Unknown Client'} - ${file.date || 'No Date'}`;
+                    // Extract date from reference (assuming format includes date)
+                    const dateMatch = file.reference.match(/(\d{1,2}-\d{1,2}-\d{4})/);
+                    const displayDate = dateMatch ? dateMatch[1] : 'No Date';
+                    quoteDetails.textContent = `${file['client-name'] || 'Unknown Client'} - ${displayDate}`;
                     quoteDetails.style.margin = '0';
                     quoteDetails.style.fontSize = '14px';
                     quoteDetails.style.color = '#666';
@@ -427,7 +429,7 @@
             };
 
             sessionStorage.setItem('selectedProfile', JSON.stringify(profileData));
-            alert(`Profile "${profile.profileName}" selected successfully!`);
+            // alert(`Profile "${profile.profileName}" selected successfully!`);
         }
 
         // Handle profile form submission
@@ -666,19 +668,17 @@
             
             // Show profile list
             document.getElementById('profileList').style.display = 'block';
-        }
-
-        // Load quote data into form for editing
+        }        // Load quote data into form for editing
         function loadQuoteForEditing(quoteData) {
+            // Clear existing dynamic fields first (before loading basic info)
+            clearDynamicFields();
+            
             // Load basic information
             document.getElementById('client-name').value = quoteData['client-name'] || '';
             document.getElementById('address').value = quoteData['address'] || '';
             document.getElementById('phone').value = quoteData['phone'] || '';
             document.getElementById('reference').value = quoteData['reference'] || '';
             document.getElementById('customer-name').value = quoteData['customer-name'] || '';
-            
-            // Clear existing dynamic fields first
-            clearQuote();
             
             // Load comments
             if (quoteData['comment'] && Array.isArray(quoteData['comment'])) {
@@ -750,7 +750,7 @@
                 }
             }
             
-            alert(`Quote "${quoteData['reference']}" loaded successfully!`);
+            // alert(`Quote "${quoteData['reference']}" loaded successfully!`);
         }
 
         // Dynamic form functions
@@ -794,13 +794,8 @@
             }
         }
 
-        function clearQuote() {
-            // Clear all text inputs
-            const textInputs = document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]');
-            textInputs.forEach(input => {
-                input.value = '';
-            });
-
+        // Clear only dynamic fields (comments and costs)
+        function clearDynamicFields() {
             // Reset dynamic fields to single empty fields
             const commentFields = document.getElementById('comment-fields');
             commentFields.innerHTML = `
@@ -819,6 +814,18 @@
                     <input type="number" step="0.01" id="cost-amount" name="cost-amount" placeholder="123.45"><br><br>
                 </div>
             `;
+        }
+
+        // Clear all form fields (for new quote)
+        function clearQuote() {
+            // Clear all text inputs
+            const textInputs = document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]');
+            textInputs.forEach(input => {
+                input.value = '';
+            });
+
+            // Clear dynamic fields
+            clearDynamicFields();
         }
 
         function generateReference() {
@@ -917,6 +924,21 @@
                 alert('Error deleting quote');
             });
         }
+
+        // Check for quote data from display page return
+        window.addEventListener('DOMContentLoaded', function() {
+            const returnQuoteData = sessionStorage.getItem('returnQuoteData');
+            if (returnQuoteData) {
+                try {
+                    const quoteData = JSON.parse(returnQuoteData);
+                    loadQuoteForEditing(quoteData);
+                    // Clear the stored data so it doesn't interfere with future operations
+                    sessionStorage.removeItem('returnQuoteData');
+                } catch (error) {
+                    console.error('Error loading return quote data:', error);
+                }
+            }
+        });
     </script>
 </body>
 </html>
